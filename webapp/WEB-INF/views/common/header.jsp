@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link href="<%= rootPath %>/assets/css/reset.css" rel="stylesheet">
 <link href="<%= rootPath %>/assets/css/common.css" rel="stylesheet">
+<link rel="icon" type="image/x-icon" href="<%= rootPath %>/assets/images/favicon.ico" />
 <%-- 추가 정적 파일은 이 주석 아래에 추가!! --%>
 <body>
 	<%
