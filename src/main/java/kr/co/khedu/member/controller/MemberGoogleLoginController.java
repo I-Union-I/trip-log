@@ -97,31 +97,31 @@ public class MemberGoogleLoginController extends HttpServlet {
 	
 	private String getGoogleEmail(String token) throws IOException {
 		String apiUrl = "https://www.googleapis.com/oauth2/v3/userinfo"; 
-	    URL url = new URL(apiUrl);
-	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	    conn.setRequestMethod("GET");
-	    conn.setRequestProperty("Authorization", "Bearer " + token);
-
-	    BufferedReader br = null;
-	    StringBuilder sb = new StringBuilder();
-	    String line;
-	    String email = null;
-
-	    try {
-	        br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-	        while ((line = br.readLine()) != null) {
-	            sb.append(line);
-	        }
-	       
-	        JsonObject json = JsonParser.parseString(sb.toString()).getAsJsonObject();
-	        if (json.has("email")) {
-	            email = json.get("email").getAsString();
-	        } 
-
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    }
-	    return email;
+		URL url = new URL(apiUrl);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+		conn.setRequestProperty("Authorization", "Bearer " + token);
+		
+		BufferedReader br = null;
+		StringBuilder sb = new StringBuilder();
+		String line;
+		String email = null;
+		
+		try {
+		    br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		    while ((line = br.readLine()) != null) {
+		        sb.append(line);
+		    }
+		   
+		    JsonObject json = JsonParser.parseString(sb.toString()).getAsJsonObject();
+		    if (json.has("email")) {
+		        email = json.get("email").getAsString();
+		    } 
+		
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+		return email;
 	}
 	
 	private void processSocialLogin(String email, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -130,22 +130,21 @@ public class MemberGoogleLoginController extends HttpServlet {
 		
 		MemberDTO loginMember = memberService.socialMember(m);
 
-        if (loginMember == null) {
-            String tempPassword = "social_" + System.currentTimeMillis(); // 예시: "social_" + 현재 시간, 임의의 비밀번호값 지정용
-            m.setPassword(tempPassword);
-            try {
-            	memberService.insertSocialMember(m);
-                loginMember = (MemberDTO) memberService.socialMember(m);
-            }catch(PersistenceException e) {
-            	e.printStackTrace();
-            	return;
-            }
-        }else {
-        	
-        }
-        HttpSession session = request.getSession();
-        session.setAttribute("loginMember", loginMember);
-        System.out.println(loginMember);
-        response.sendRedirect(request.getContextPath());
+		if (loginMember == null) {
+		    String tempPassword = "social_" + System.currentTimeMillis(); // 예시: "social_" + 현재 시간, 임의의 비밀번호값 지정용
+		    m.setPassword(tempPassword);
+		    try {
+		    	memberService.insertSocialMember(m);
+		        loginMember = (MemberDTO) memberService.socialMember(m);
+		    }catch(PersistenceException e) {
+		    	e.printStackTrace();
+		    	return;
+		    }
+		} 
+		
+		HttpSession session = request.getSession();
+		session.setAttribute("loginMember", loginMember);
+		System.out.println(loginMember);
+		response.sendRedirect(request.getContextPath());
 	}
 }
