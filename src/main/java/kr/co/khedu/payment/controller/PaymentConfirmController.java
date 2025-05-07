@@ -15,7 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
 
 import kr.co.bootpay.pg.Bootpay;
-import kr.co.khedu.payment.model.dto.PaymentInfoDTO;
+import kr.co.khedu.payment.model.vo.Payment;
+import kr.co.khedu.payment.service.PaymentServiceImpl;
 
 /**
  * Servlet implementation class PaymentConfirmController
@@ -69,14 +70,18 @@ public class PaymentConfirmController extends HttpServlet {
         // JSON 데이터 읽기
         BufferedReader reader = request.getReader();
         Gson gson = new Gson();
-        PaymentInfoDTO paymentInfo = gson.fromJson(reader, PaymentInfoDTO.class);
-        
+        Payment paymentInfo = gson.fromJson(reader, Payment.class);
+
         System.out.println(paymentInfo.getReceiptId());
+        System.out.println(paymentInfo.getOrderId());
+        System.out.println(paymentInfo.getMemberId());
+        System.out.println(paymentInfo.getAmount());
+        System.out.println(paymentInfo.getMethod());
 
         // TODO: 결제 정보 처리 로직
 
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("success", false);  // 기본값
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("success", false);  // 기본값
 
         try {
             Bootpay bootpay = new Bootpay(restAPI, priAPI);
@@ -84,28 +89,34 @@ public class PaymentConfirmController extends HttpServlet {
             
             System.out.println(token);
             if(token.get("error_code") != null) {
-                result.put("message", "토큰 발급 실패");
+            	hashMap.put("message", "토큰 발급 실패");
             } else {
                 String receiptId = paymentInfo.getReceiptId();
                 HashMap<String, Object> res = bootpay.confirm(receiptId);
                 if(res.get("error_code") == null) {
-                    // 결제 성공 처리
-                    System.out.println("confirm success: " + res);
-                    result.put("success", true);
-                    result.put("message", "결제 확인 성공");
+                    
+                    int result = new PaymentServiceImpl().insertPayment(paymentInfo);
+                    
+                    if(result > 0) {
+                        // 결제 성공 처리
+                        System.out.println("confirm success: " + res);
+                        hashMap.put("success", true);
+                        hashMap.put("message", "결제 확인 성공");
+                    }
+                    
                 } else {
                     System.out.println("confirm false: " + res);
-                    result.put("message", "결제 확인 실패");
+                    hashMap.put("message", "결제 확인 실패");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            result.put("message", "서버 오류 발생");
+            hashMap.put("message", "서버 오류 발생");
         }
 
         // 클라이언트에 JSON 응답 전송
         gson = new Gson();
-        String jsonResponse = gson.toJson(result);
+        String jsonResponse = gson.toJson(hashMap);
         System.out.println(jsonResponse);
         response.getWriter().write(jsonResponse);
 	}

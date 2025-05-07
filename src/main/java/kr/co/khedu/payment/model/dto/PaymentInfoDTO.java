@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 public class PaymentInfoDTO {
     private String receiptId;
     private String orderId;
-    private int price;
+	private String method;
+    private int amount;
     private String status;
-    private String userId;
+    private String memberId;
     private String productId;
 }

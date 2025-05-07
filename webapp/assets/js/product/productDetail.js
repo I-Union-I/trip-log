@@ -31,12 +31,14 @@ const payment = async () => {
       text: `${productInfo.name} ${productInfo.price}원 상품을 구매하시겠습니까?`,
     }).then(async (result) => {
       if (result.isConfirmed) {
+        const now = new Date();
         try {
           const response = await Bootpay.requestPayment({
             application_id: bootpay.js_key,
             price: productInfo.price,
             order_name: productInfo.name,
-            order_id: "TEST_ORDER_ID", // 실제로는 유니크하게 만들어야 함
+            order_id:
+              productInfo.productId + "_" + (Math.floor(Math.random() * 10000) + 1) + "_" + now.getFullYear() + now.getMonth() + now.getDate(),
             pg: "이니시스",
             method: "카드",
             tax_free: 0,
@@ -62,32 +64,35 @@ const payment = async () => {
               display_error_result: true,
             },
           });
-
+          console.log(response);
           // 결제 성공 시 서버로 결제 정보 전송
           $.ajax({
-            url: "/trip-log/payment/confirm", // 서버에서 결제 처리할 엔드포인트
+            url: "/trip-log/payment/confirm",
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify({
               receiptId: response.receipt_id,
               orderId: response.order_id,
-              price: response.price,
-              status: response.status,
-              userId: productInfo.memberId,
+              amount: productInfo.price,
+              method: "카드",
+              memberId: productInfo.memberId,
               productId: productInfo.productId,
             }),
             success: function (result) {
               if (result.success) {
+                console.log(response);
                 Bootpay.destroy();
                 Swal.fire("결제 성공", result.message, "success").then(() => {
                   location.href = "/trip-log/products/detail/" + productInfo.productId;
                 });
               } else {
+                console.log(response);
                 Swal.fire("결제 실패", result.message, "warning");
                 location.href = "/trip-log/products/detail/" + productInfo.productId;
               }
             },
             error: function (error) {
+              console.log(response);
               Swal.fire("서버 오류", "결제 정보 저장 중 문제가 발생했습니다.", "error");
             },
           });
