@@ -220,6 +220,7 @@
 	        }
         <% } %>
     </script>
-	<script src="<%= rootPath %>/assets/js/product/productDetail.js"></script>
+	<script type="module" src="<%= rootPath %>/assets/js/product/productDetail.js"></script>
+	<script type="module" src="/trip-log/assets/js/product/bootpay.js"></script>
 </body>
 </html>

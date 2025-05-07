@@ -1,103 +1,5 @@
-// onload = function() {
-//     reviewRegister();
-// }
+import { bootpay } from "./bootpay.js";
 
-// // 결제 API
-// const payment = () => {
-//     const paymentBtn = document.getElementById("paymentBtn");
-
-//     paymentBtn.addEventListener("click", () => {
-
-//     })
-// }
-
-// // 리뷰 등록
-// const reviewRegister = () => {
-//     const rateWrap = document.querySelectorAll('.rating'),
-//         label = document.querySelectorAll('.rating .rating__label'),
-//         input = document.querySelectorAll('.rating .rating__input'),
-//         labelLength = label.length,
-//         opacityHover = '0.5';
-
-//     let stars = document.querySelectorAll('.rating .star-icon');
-
-//     checkedRate();
-
-//     rateWrap.forEach(wrap => {
-//         wrap.addEventListener('mouseenter', () => {
-//             stars = wrap.querySelectorAll('.star-icon');
-
-//             stars.forEach((starIcon, idx) => {
-//                 starIcon.addEventListener('mouseenter', () => {
-//                     initStars();
-//                     filledRate(idx, labelLength);
-
-//                     for (let i = 0; i < stars.length; i++) {
-//                         if (stars[i].classList.contains('filled')) {
-//                             stars[i].style.opacity = opacityHover;
-//                         }
-//                     }
-//                 });
-
-//                 starIcon.addEventListener('mouseleave', () => {
-//                     starIcon.style.opacity = '1';
-//                     checkedRate();
-//                 });
-
-//                 wrap.addEventListener('mouseleave', () => {
-//                     starIcon.style.opacity = '1';
-//                 });
-//             });
-//         });
-//     });
-
-//     function filledRate(index, length) {
-//         if (index <= length) {
-//             for (let i = 0; i <= index; i++) {
-//                 stars[i].classList.add('filled');
-//             }
-//         }
-//     }
-
-//     function checkedRate() {
-//         let checkedRadio = document.querySelectorAll('.rating input[type="radio"]:checked');
-
-//         initStars();
-//         checkedRadio.forEach(radio => {
-//             let previousSiblings = prevAll(radio);
-
-//             for (let i = 0; i < previousSiblings.length; i++) {
-//                 previousSiblings[i].querySelector('.star-icon').classList.add('filled');
-//             }
-
-//             radio.nextElementSibling.classList.add('filled');
-
-//             function prevAll() {
-//                 let radioSiblings = [],
-//                     prevSibling = radio.parentElement.previousElementSibling;
-
-//                 while (prevSibling) {
-//                     radioSiblings.push(prevSibling);
-//                     prevSibling = prevSibling.previousElementSibling;
-//                 }
-//                 return radioSiblings;
-//             }
-//         });
-//     }
-
-//     function initStars() {
-//         for (let i = 0; i < stars.length; i++) {
-//             stars[i].classList.remove('filled');
-//         }
-//     }
-
-//     const reviewRegisterBtn = document.getElementById("reviewRegisterBtn");
-
-//     reviewRegisterBtn.onclick = () => {
-//         let starInputArr = document.querySelectorAll(".star-icon.filled");
-//         console.log(starInputArr.length / 2);
-//     }
-// }
 $(function () {
   reviewRegister();
   payment();
@@ -106,7 +8,7 @@ $(function () {
   productDeleteBtn();
 });
 // 결제 API
-const payment = () => {
+const payment = async () => {
   const $paymentBtn = $("#paymentBtn");
 
   console.log(productInfo);
@@ -123,45 +25,76 @@ const payment = () => {
     */
 
   $paymentBtn.on("click", () => {
-    // Swal.fire({
-    //   title: "상품 결제",
-    //   icon: "warning",
-    //   text: "아직 개발 중 입니다...ㅠ",
-    // });
     Swal.fire({
       title: "상품 결제",
       icon: "question",
-      text: `${productInfo.name} - ${productInfo.price} 상품을 구매하시겠습니까?`,
+      text: `${productInfo.name} ${productInfo.price}원 상품을 구매하시겠습니까?`,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const response = await Bootpay.requestPayment({
-          application_id: "59a4d323396fa607cbe75de4",
-          price: 1000,
-          order_name: "테스트결제",
-          order_id: "TEST_ORDER_ID",
-          pg: "다날",
-          method: "카드",
-          tax_free: 0,
-          user: {
-            id: "회원아이디",
-            username: "회원이름",
-            phone: "01000000000",
-            email: "test@test.com",
-          },
-          items: [
-            {
-              id: "item_id",
-              name: "테스트아이템",
-              qty: 1,
-              price: 1000,
+        try {
+          const response = await Bootpay.requestPayment({
+            application_id: bootpay.js_key,
+            price: productInfo.price,
+            order_name: productInfo.name,
+            order_id: "TEST_ORDER_ID", // 실제로는 유니크하게 만들어야 함
+            pg: "이니시스",
+            method: "카드",
+            tax_free: 0,
+            user: {
+              id: productInfo.memberId,
+              username: "관리자",
+              phone: "01000000000",
+              email: "test@test.com",
             },
-          ],
-          extra: {
-            open_type: "iframe",
-            card_quota: "0,2,3",
-            escrow: false,
-          },
-        });
+            items: [
+              {
+                id: productInfo.productId,
+                name: productInfo.name,
+                qty: 1,
+                price: productInfo.price,
+              },
+            ],
+            extra: {
+              open_type: "iframe",
+              card_quota: "0,2,3",
+              escrow: false,
+              separately_confirmed: true,
+              display_error_result: true,
+            },
+          });
+
+          // 결제 성공 시 서버로 결제 정보 전송
+          $.ajax({
+            url: "/trip-log/payment/confirm", // 서버에서 결제 처리할 엔드포인트
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              receiptId: response.receipt_id,
+              orderId: response.order_id,
+              price: response.price,
+              status: response.status,
+              userId: productInfo.memberId,
+              productId: productInfo.productId,
+            }),
+            success: function (result) {
+              if (result.success) {
+                Bootpay.destroy();
+                Swal.fire("결제 성공", result.message, "success").then(() => {
+                  location.href = "/trip-log/products/detail/" + productInfo.productId;
+                });
+              } else {
+                Swal.fire("결제 실패", result.message, "warning");
+                location.href = "/trip-log/products/detail/" + productInfo.productId;
+              }
+            },
+            error: function (error) {
+              Swal.fire("서버 오류", "결제 정보 저장 중 문제가 발생했습니다.", "error");
+            },
+          });
+        } catch (error) {
+          // Bootpay 결제 실패
+          Swal.fire("결제 실패", error.message || "결제 중 문제가 발생했습니다.", "error");
+        }
       }
     });
   });
