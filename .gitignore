@@ -21,5 +21,11 @@
 /webapp/META-INF/
 /webapp/WEB-INF/classes/
 
+# README.md 파일은 예외
+!/README.md
 # 소셜로그인 key 값 제외
 keys.properties
+
+# bootpay key 값 제외
+bootpay.properties
+bootpay.js

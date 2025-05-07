@@ -15,4 +15,6 @@ public class Payment {
 	private String createdAt;
 	private int productId;
 	private int memberId;
+    private String receiptId;
+    private String orderId;
 }

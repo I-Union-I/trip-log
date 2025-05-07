@@ -20,6 +20,7 @@
 		<typeAlias alias="Post" type="kr.co.khedu.post.model.vo.Post" />
 		<typeAlias alias="Vote" type="kr.co.khedu.vote.model.vo.Vote" />
 		<typeAlias alias="Review" type="kr.co.khedu.product.model.vo.Review" />
+		<typeAlias alias="Payment" type="kr.co.khedu.payment.model.vo.Payment"/>
 	</typeAliases>
 
 	<environments default="develop">
@@ -41,5 +42,6 @@
 		<mapper resource="/mappers/member-mapper.xml"/>
 		<mapper resource="/mappers/post-mapper.xml"/>
 		<mapper resource="/mappers/vote-mapper.xml"/>
+		<mapper resource="/mappers/payment-mapper.xml"/>
 	</mappers>
 </configuration>
