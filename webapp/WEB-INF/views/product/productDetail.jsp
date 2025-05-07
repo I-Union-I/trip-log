@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="<%= rootPath %>/assets/css/product/producDetail.css">
 
 <%-- 부트페이 CDN 연결 --%>
-<script src="https://js.bootpay.co.kr/bootpay-5.1.0.min.js" type="application/javascript"></script>
+<script src="https://js.bootpay.co.kr/bootpay-5.1.4.min.js" type="application/javascript"></script>
 </head>
 <body>
 	<div id="root">
