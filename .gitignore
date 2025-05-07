@@ -28,3 +28,4 @@ keys.properties
 
 # bootpay key 값 제외
 bootpay.properties
+bootpay.json
